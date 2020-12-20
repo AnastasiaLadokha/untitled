@@ -25,7 +25,7 @@ public class Human {
     }
 
 
-    private List<Pokupka> pokupkas = new ArrayList<>();
+    private volatile List<Pokupka> pokupkas = new ArrayList<>();
     private Shop shop;
 
     public void setjLabel(JLabel jLabel) {
@@ -40,60 +40,71 @@ public class Human {
         return pokupkas;
     }
 
-    public void generatePokupkasList() {
+    public synchronized void generatePokupkasList() {
 
-        int randomCountOfPokupkas = ThreadLocalRandom.current().nextInt(1, 3);
-        for (int i = 0; i < randomCountOfPokupkas; i++) {
-            Pokupka pokupka = new Pokupka(pokupkasList.get(i));
+        int randomCountOfPokupkas = ThreadLocalRandom.current().nextInt(0, 3);
+        for (int i = 0; i < ThreadLocalRandom.current().nextInt(1, 10); i++) {
+            Pokupka pokupka = new Pokupka(pokupkasList.get(ThreadLocalRandom.current().nextInt(0, 3)));
             pokupkas.add(pokupka);
         }
     }
 
     public void goForPokupki() {
-        pokupkas.forEach(pokupka -> {
-            moveHumanForPokupka(pokupka);
-        });
+        pokupkas.forEach(this::moveHumanForPokupka);
         goTOKassa();
     }
 
     private void goTOKassa() {
-        try {
-            BufferedImage image = ImageIO.read(getClass().getClassLoader().getResource("chelovekWithCard.png"));
-            jLabel.setIcon(new ImageIcon(image));
+        if (shop.isKassaFree()) {
+            try {
+                shop.setKassaFree(false);
+                BufferedImage image = ImageIO.read(getClass().getClassLoader().getResource("chelovekWithCard.png"));
+                jLabel.setIcon(new ImageIcon(image));
+                jLabel.repaint();
+            } catch (Exception e){
+                e.printStackTrace();
+            }
+            int x = jLabel.getX();
+            int y = jLabel.getY();
+
+            while (jLabel.getX() <= 800 ){
+                try {
+                    jLabel.setLocation(x, jLabel.getY());
+                    Thread.sleep(100);
+                    x += 10;
+                } catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+            while (jLabel.getY() <= 375 ){
+                try {
+                    jLabel.setLocation(jLabel.getX(), y);
+                    Thread.sleep(100);
+                    y += 10;
+                } catch (InterruptedException e){
+                    e.printStackTrace();
+                }
+            }
+
+            try {
+                Thread.sleep(3000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            jLabel.setIcon(null);
             jLabel.repaint();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-        int x = jLabel.getX();
-        int y = jLabel.getY();
 
-        while (jLabel.getX() <= 800 ){
+            shop.setKassaFree(true);
+        }
+        else {
             try {
-                jLabel.setLocation(x, jLabel.getY());
-                Thread.sleep(100);
-                x += 10;
-            } catch (InterruptedException e){
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            goTOKassa();
         }
-        while (jLabel.getY() <= 375 ){
-            try {
-                jLabel.setLocation(jLabel.getX(), y);
-                Thread.sleep(100);
-                y += 10;
-            } catch (InterruptedException e){
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            Thread.sleep(3000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        jLabel.setIcon(null);
-        jLabel.repaint();
     }
 
     private void moveHumanForPokupka(Pokupka pokupka) {

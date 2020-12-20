@@ -1,13 +1,20 @@
 package ua.stu;
 
+import sun.audio.AudioData;
+import sun.audio.AudioPlayer;
+import sun.audio.AudioStream;
+import sun.audio.ContinuousAudioDataStream;
+
 import javax.imageio.ImageIO;
+import javax.sound.sampled.AudioInputStream;
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.Clip;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
@@ -86,6 +93,7 @@ public class App extends JFrame {
         buttonStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                playSound();
                 startWork();
             }
         });
@@ -146,7 +154,8 @@ public class App extends JFrame {
             label.setLocation(x, y);
             try {
 
-                BufferedImage image = ImageIO.read(getClass().getClassLoader().getResource("chelovekWithBucket.png"));;
+                BufferedImage image = ImageIO.read(getClass().getClassLoader().getResource("chelovekWithBucket.png"));
+                ;
                 label.setIcon(new ImageIcon(image));
                 getMainPanel().add(label);
                 label.repaint();
@@ -168,14 +177,12 @@ public class App extends JFrame {
         Shop shop = new Shop();
 
         //while (true) {
-            List<Human> humanList = generateHumans(shop);
+        List<Human> humanList = generateHumans(shop);
 
-            humanList.forEach(human -> {
-                Thread thread = new Thread(() -> {
-                    human.goForPokupki();
-                });
-                thread.start();
-            });
+        humanList.forEach(human -> {
+            Thread thread = new Thread(human::goForPokupki);
+            thread.start();
+        });
 
             /*try {
                 //TIME TO SLEEP BEFORE NEW PEOPLE WILL BE GENERATED.
@@ -304,4 +311,7 @@ public class App extends JFrame {
         return mainPanel;
     }
 
+    public void playSound() {
+        new Sound().play();
+    }
 }

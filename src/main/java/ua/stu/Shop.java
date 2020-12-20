@@ -21,4 +21,14 @@ public class Shop {
     public void deleteNotFreePokupka(Pokupka pokupka) {
         notFreePokupkas.remove(pokupka);
     }
+
+    private boolean isKassaFree = true;
+
+    public synchronized boolean isKassaFree() {
+        return isKassaFree;
+    }
+
+    public void setKassaFree(boolean kassaFree) {
+        isKassaFree = kassaFree;
+    }
 }
